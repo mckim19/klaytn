@@ -75,6 +75,7 @@ func (c *core) sendRoundChange(round *big.Int) {
 		return
 	}
 
+	logger.Info("Send RoundChange")
 	c.broadcast(&message{
 		Hash: rc.PrevHash,
 		Code: msgRoundChange,

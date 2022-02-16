@@ -85,6 +85,8 @@ func (sb *backend) HandleMsg(addr common.Address, msg p2p.Msg) (bool, error) {
 
 		// Mark self known message
 		if _, ok := sb.knownMessages.Get(hash); ok {
+
+			//logger.Info("knownMessage")
 			return true, nil
 		}
 		sb.knownMessages.Add(hash, true)

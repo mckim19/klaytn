@@ -27,6 +27,7 @@ import (
 func (c *core) handleFinalCommitted() error {
 	logger := c.logger.NewWith("state", c.state)
 	logger.Trace("Received a final committed proposal")
+	logger.Info("------------FinalCommitted-----------")
 	c.startNewRound(common.Big0)
 	return nil
 }

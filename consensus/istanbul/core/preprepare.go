@@ -46,6 +46,7 @@ func (c *core) sendPreprepare(request *istanbul.Request) {
 			return
 		}
 
+		logger.Info("Send Pre-Prepare", "Block Number", request.Proposal.Number())
 		c.broadcast(&message{
 			Hash: request.Proposal.ParentHash(),
 			Code: msgPreprepare,

@@ -43,6 +43,7 @@ func (c *core) sendPrepare() {
 		return
 	}
 
+	logger.Info("Send Prepare", "Block Number", c.current.Preprepare.Proposal.Number())
 	c.broadcast(&message{
 		Hash: prevHash,
 		Code: msgPrepare,

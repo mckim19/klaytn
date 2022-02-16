@@ -22,6 +22,8 @@ package backend
 
 import (
 	"crypto/ecdsa"
+	"github.com/klaytn/klaytn/rlp"
+	"github.com/rcrowley/go-metrics"
 	"math/big"
 	"sync"
 	"sync/atomic"
@@ -193,7 +195,7 @@ func (sb *backend) Gossip(valSet istanbul.ValidatorSet, payload []byte) error {
 				PrevHash: common.Hash{},
 				Payload:  payload,
 			}
-
+			logger.Info("send in Gossip")
 			//go p.Send(IstanbulMsg, payload)
 			go p.Send(IstanbulMsg, cmsg)
 		}
@@ -234,6 +236,25 @@ func (sb *backend) getTargetReceivers(prevHash common.Hash, valSet istanbul.Vali
 	return targets
 }
 
+var (
+	// meter for specific consensus msg counting
+	propConsensusPreprepareOutPacketsCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/out/packets", nil)
+	propConsensusPrepareOutPacketsCounter     = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/out/packets", nil)
+	propConsensusCommitOutPacketsCounter      = metrics.NewRegisteredCounter("klay/prop/consensus/commit/out/packets", nil)
+	propConsensusRoundchangeOutPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/out/packets", nil)
+
+	// meter for all consensus msg counting, it's for comparing with a legacy metric
+	propConsensusIstanbulAllOutPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/istanbulall/out/packets", nil)
+
+	// propConsensusIstanbulOutPacketsMeter
+
+	// not yet implemented.
+	//propConsensusPreprepareOutTrafficCounter = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/out/traffic", nil)
+	//propConsensusPrepareOutTrafficCounter = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/out/traffic", nil)
+	//propConsensusCommitOutTrafficCounter = metrics.NewRegisteredCounter("klay/prop/consensus/commit/out/traffic", nil)
+	//propConsensusRoundchangeOutTrafficCounter = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/out/traffic", nil)
+)
+
 // GossipSubPeer implements istanbul.Backend.Gossip
 func (sb *backend) GossipSubPeer(prevHash common.Hash, valSet istanbul.ValidatorSet, payload []byte) map[common.Address]bool {
 	if !sb.checkInSubList(prevHash, valSet) {
@@ -247,6 +268,31 @@ func (sb *backend) GossipSubPeer(prevHash common.Hash, valSet istanbul.Validator
 
 	if sb.broadcaster != nil && len(targets) > 0 {
 		ps := sb.broadcaster.FindCNPeers(targets)
+
+		// metering
+		propConsensusIstanbulAllOutPacketsCounter.Inc(int64(len(ps)))
+		type message struct {
+			Hash          common.Hash
+			Code          uint64
+			Msg           []byte
+			Address       common.Address
+			Signature     []byte
+			CommittedSeal []byte
+		}
+		msg := new(message)
+		_ = rlp.DecodeBytes(payload, &msg)
+		switch msg.Code {
+		case 0:
+			propConsensusPreprepareOutPacketsCounter.Inc(int64(len(ps)))
+			//propConsensusPreprepareInTrafficCounter
+		case 1:
+			propConsensusPrepareOutPacketsCounter.Inc(int64(len(ps)))
+		case 2:
+			propConsensusCommitOutPacketsCounter.Inc(int64(len(ps)))
+		case 3:
+			propConsensusRoundchangeOutPacketsCounter.Inc(int64(len(ps)))
+		}
+
 		for addr, p := range ps {
 			ms, ok := sb.recentMessages.Get(addr)
 			var m *lru.ARCCache
@@ -268,6 +314,7 @@ func (sb *backend) GossipSubPeer(prevHash common.Hash, valSet istanbul.Validator
 				Payload:  payload,
 			}
 
+			//logger.Info("send in GossipSubPeer")
 			go p.Send(IstanbulMsg, cmsg)
 		}
 	}

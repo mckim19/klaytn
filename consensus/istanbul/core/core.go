@@ -191,6 +191,7 @@ func (c *core) commit() {
 		if err := c.backend.Commit(proposal, committedSeals); err != nil {
 			c.current.UnlockHash() //Unlock block when insertion fails
 			c.sendNextRoundChange("commit failure")
+			logger.Info("Send RoundChange", "Number", c.current.Preprepare.Proposal.Number())
 			return
 		}
 	} else {
@@ -198,12 +199,14 @@ func (c *core) commit() {
 		logger.Error("istanbul.core current.Proposal is NULL")
 		c.current.UnlockHash() //Unlock block when insertion fails
 		c.sendNextRoundChange("commit failure. proposal is nil")
+		logger.Info("Send RoundChange", "Number", c.current.Preprepare.Proposal.Number())
 		return
 	}
 }
 
 // startNewRound starts a new round. if round equals to 0, it means to starts a new sequence
 func (c *core) startNewRound(round *big.Int) {
+	logger.Info("--------------StartNewRound!!----------------")
 	var logger log.Logger
 	if c.current == nil {
 		logger = c.logger.NewWith("old_round", -1, "old_seq", 0)

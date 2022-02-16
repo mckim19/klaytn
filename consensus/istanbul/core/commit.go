@@ -64,6 +64,7 @@ func (c *core) broadcastCommit(sub *istanbul.Subject) {
 		return
 	}
 
+	logger.Info("Send Commit", "Block Number", c.current.Preprepare.Proposal.Number())
 	c.broadcast(&message{
 		Hash: sub.PrevHash,
 		Code: msgCommit,
@@ -106,8 +107,8 @@ func (c *core) handleCommit(msg *message, src istanbul.Validator) error {
 			logger.Warn("received commit of the hash locked proposal and change state to prepared", "msgType", msgCommit)
 			c.setState(StatePrepared)
 			c.sendCommit()
+
 		} else if c.current.GetPrepareOrCommitSize() > 2*c.valSet.F() {
-			logger.Info("received more than 2f agreements and change state to prepared", "msgType", msgCommit)
 			c.current.LockHash()
 			c.setState(StatePrepared)
 			c.sendCommit()
@@ -122,6 +123,7 @@ func (c *core) handleCommit(msg *message, src istanbul.Validator) error {
 	if c.state.Cmp(StateCommitted) < 0 && c.current.Commits.Size() > 2*c.valSet.F() {
 		// Still need to call LockHash here since state can skip Prepared state and jump directly to the Committed state.
 		c.current.LockHash()
+		logger.Info("Size", "F", c.valSet.F(), "valSize", c.valSet.Size(), "SubGroupSize", c.valSet.SubGroupSize())
 		c.commit()
 	}
 
