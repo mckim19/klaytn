@@ -22,6 +22,8 @@ package backend
 
 import (
 	"errors"
+	"github.com/klaytn/klaytn/rlp"
+	"github.com/rcrowley/go-metrics"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/klaytn/klaytn/common"
@@ -53,6 +55,23 @@ func (sb *backend) Protocol() consensus.Protocol {
 	return istanbulProtocol
 }
 
+var (
+	// meter for specific consensus msg counting
+	propConsensusPreprepareInPacketsCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/in/packets", nil)
+	propConsensusPrepareInPacketsCounter     = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/in/packets", nil)
+	propConsensusCommitInPacketsCounter      = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/packets", nil)
+	propConsensusRoundchangeInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/in/packets", nil)
+
+	// meter for all consensus msg counting, it's for comparing with a legacy metric
+	propConsensusIstanbulAllInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/istanbulall/in/packets", nil)
+
+	// not yet implemented.
+	//propConsensusPreprepareInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/in/traffic", nil)
+	//propConsensusPrepareInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/in/traffic", nil)
+	//propConsensusCommitInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/traffic", nil)
+	//propConsensusRoundchangeInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/in/traffic", nil)
+)
+
 // HandleMsg implements consensus.Handler.HandleMsg
 func (sb *backend) HandleMsg(addr common.Address, msg p2p.Msg) (bool, error) {
 	sb.coreMu.Lock()
@@ -83,10 +102,30 @@ func (sb *backend) HandleMsg(addr common.Address, msg p2p.Msg) (bool, error) {
 		}
 		m.Add(hash, true)
 
+		type message struct {
+			Hash          common.Hash
+			Code          uint64
+			Msg           []byte
+			Address       common.Address
+			Signature     []byte
+			CommittedSeal []byte
+		}
+		msg := new(message)
+		_ = rlp.DecodeBytes(cmsg.Payload, &msg)
+		// metering
+		switch msg.Code {
+		case 0:
+			propConsensusPreprepareInPacketsCounter.Inc(1)
+		case 1:
+			propConsensusPrepareInPacketsCounter.Inc(1)
+		case 2:
+			propConsensusCommitInPacketsCounter.Inc(1)
+		case 3:
+			propConsensusRoundchangeInPacketsCounter.Inc(1)
+		}
+
 		// Mark self known message
 		if _, ok := sb.knownMessages.Get(hash); ok {
-
-			//logger.Info("knownMessage")
 			return true, nil
 		}
 		sb.knownMessages.Add(hash, true)

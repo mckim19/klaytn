@@ -23,7 +23,6 @@ package core
 import (
 	"github.com/klaytn/klaytn/common"
 	"github.com/klaytn/klaytn/consensus/istanbul"
-	"github.com/rcrowley/go-metrics"
 )
 
 // Start implements core.Engine.Start
@@ -171,26 +170,8 @@ func (c *core) handleMsg(payload []byte) error {
 		logger.Error("Invalid address in message", "msg", msg)
 		return istanbul.ErrUnauthorizedAddress
 	}
-
 	return c.handleCheckedMsg(msg, src)
 }
-
-var (
-	// meter for specific consensus msg counting
-	propConsensusPreprepareInPacketsCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/in/packets", nil)
-	propConsensusPrepareInPacketsCounter     = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/in/packets", nil)
-	propConsensusCommitInPacketsCounter      = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/packets", nil)
-	propConsensusRoundchangeInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/in/packets", nil)
-
-	// meter for all consensus msg counting, it's for comparing with a legacy metric
-	propConsensusIstanbulAllInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/istanbulall/in/packets", nil)
-
-	// not yet implemented.
-	//propConsensusPreprepareInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/in/traffic", nil)
-	//propConsensusPrepareInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/in/traffic", nil)
-	//propConsensusCommitInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/traffic", nil)
-	//propConsensusRoundchangeInTrafficCounter  = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/in/traffic", nil)
-)
 
 func (c *core) handleCheckedMsg(msg *message, src istanbul.Validator) error {
 	logger := c.logger.NewWith("address", c.address, "from", src)
@@ -202,18 +183,6 @@ func (c *core) handleCheckedMsg(msg *message, src istanbul.Validator) error {
 		}
 
 		return err
-	}
-
-	// metering
-	switch msg.Code {
-	case msgPreprepare:
-		propConsensusPreprepareInPacketsCounter.Inc(1)
-	case msgPrepare:
-		propConsensusPrepareInPacketsCounter.Inc(1)
-	case msgCommit:
-		propConsensusCommitInPacketsCounter.Inc(1)
-	case msgRoundChange:
-		propConsensusRoundchangeInPacketsCounter.Inc(1)
 	}
 
 	switch msg.Code {
