@@ -62,6 +62,10 @@ var (
 	propConsensusCommitInPacketsCounter      = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/packets", nil)
 	propConsensusRoundchangeInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/roundchange/in/packets", nil)
 
+	propConsensusPreprepareInPacketsAfterKnownCounter = metrics.NewRegisteredCounter("klay/prop/consensus/preprepare/in/packets/after/known", nil)
+	propConsensusPrepareInPacketsAfterKnownCounter    = metrics.NewRegisteredCounter("klay/prop/consensus/prepare/in/packets/after/known", nil)
+	propConsensusCommitInPacketsAfterKnownCounter     = metrics.NewRegisteredCounter("klay/prop/consensus/commit/in/packets/after/known", nil)
+
 	// meter for all consensus msg counting, it's for comparing with a legacy metric
 	propConsensusIstanbulAllInPacketsCounter = metrics.NewRegisteredCounter("klay/prop/consensus/istanbulall/in/packets", nil)
 
@@ -132,6 +136,20 @@ func (sb *backend) HandleMsg(addr common.Address, msg p2p.Msg) (bool, error) {
 			return true, nil
 		}
 		sb.knownMessages.Add(hash, true)
+
+		switch msg.Code {
+		case 0:
+			//logger.Info("Received Pre-prepare")
+			propConsensusPreprepareInPacketsAfterKnownCounter.Inc(1)
+		case 1:
+			//logger.Info("Received Prepare")
+			propConsensusPrepareInPacketsAfterKnownCounter.Inc(1)
+		case 2:
+			//logger.Info("Received Commit")
+			propConsensusCommitInPacketsAfterKnownCounter.Inc(1)
+		case 3:
+			propConsensusRoundchangeInPacketsCounter.Inc(1)
+		}
 
 		go sb.istanbulEventMux.Post(istanbul.MessageEvent{
 			Payload: data,
