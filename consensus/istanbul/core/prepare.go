@@ -43,7 +43,7 @@ func (c *core) sendPrepare() {
 		return
 	}
 
-	logger.Info("Send Prepare", "Block Number", c.current.Preprepare.Proposal.Number())
+	//logger.Info("Send Prepare", "Block Number", c.current.Preprepare.Proposal.Number())
 	c.broadcast(&message{
 		Hash: prevHash,
 		Code: msgPrepare,
@@ -77,7 +77,7 @@ func (c *core) handlePrepare(msg *message, src istanbul.Validator) error {
 	}
 
 	c.acceptPrepare(msg, src)
-	logger.Info("boardcast 2")
+
 	// Change to Prepared state if we've received enough PREPARE/COMMIT messages or it is locked
 	// and we are in earlier state before Prepared state.
 	// Both of PREPARE and COMMIT messages are counted since the nodes which is hashlocked in

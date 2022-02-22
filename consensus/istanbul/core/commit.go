@@ -64,7 +64,7 @@ func (c *core) broadcastCommit(sub *istanbul.Subject) {
 		return
 	}
 
-	logger.Info("Send Commit", "Block Number", c.current.Preprepare.Proposal.Number())
+	//logger.Info("Send Commit", "Block Number", c.current.Preprepare.Proposal.Number())
 	c.broadcast(&message{
 		Hash: sub.PrevHash,
 		Code: msgCommit,

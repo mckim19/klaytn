@@ -298,10 +298,13 @@ func (sb *backend) GossipSubPeer(prevHash common.Hash, valSet istanbul.Validator
 			_ = rlp.DecodeBytes(payload, &msg)
 			switch msg.Code {
 			case 0:
+				//logger.Info("Send Pre-prepare")
 				propConsensusPreprepareOutPacketsCounter.Inc(int64(len(ps)))
 			case 1:
+				//logger.Info("Send Prepare")
 				propConsensusPrepareOutPacketsCounter.Inc(int64(len(ps)))
 			case 2:
+				//logger.Info("Send Commit")
 				propConsensusCommitOutPacketsCounter.Inc(int64(len(ps)))
 			case 3:
 				propConsensusRoundchangeOutPacketsCounter.Inc(int64(len(ps)))

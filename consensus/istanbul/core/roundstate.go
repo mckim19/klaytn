@@ -56,6 +56,9 @@ type roundState struct {
 	Commits        *messageSet
 	lockedHash     common.Hash
 	pendingRequest *istanbul.Request
+	cnt_preprepare int64
+	cnt_prepare    int64
+	cnt_commit     int64
 
 	mu             *sync.RWMutex
 	hasBadProposal func(hash common.Hash) bool

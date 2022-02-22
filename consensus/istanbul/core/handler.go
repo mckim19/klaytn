@@ -187,13 +187,13 @@ func (c *core) handleCheckedMsg(msg *message, src istanbul.Validator) error {
 
 	switch msg.Code {
 	case msgPreprepare:
-		logger.Info("received PrePrepare", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
+		//logger.Info("received PrePrepare", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
 		return testBacklog(c.handlePreprepare(msg, src))
 	case msgPrepare:
-		logger.Info("received Prepare", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
+		//logger.Info("received Prepare", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
 		return testBacklog(c.handlePrepare(msg, src))
 	case msgCommit:
-		logger.Info("received Commit", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
+		//logger.Info("received Commit", "round", c.current.round, "sequence", c.current.sequence, "state", c.state)
 		return testBacklog(c.handleCommit(msg, src))
 	case msgRoundChange:
 		return testBacklog(c.handleRoundChange(msg, src))

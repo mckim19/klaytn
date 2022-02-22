@@ -115,10 +115,13 @@ func (sb *backend) HandleMsg(addr common.Address, msg p2p.Msg) (bool, error) {
 		// metering
 		switch msg.Code {
 		case 0:
+			//logger.Info("Received Pre-prepare")
 			propConsensusPreprepareInPacketsCounter.Inc(1)
 		case 1:
+			//logger.Info("Received Prepare")
 			propConsensusPrepareInPacketsCounter.Inc(1)
 		case 2:
+			//logger.Info("Received Commit")
 			propConsensusCommitInPacketsCounter.Inc(1)
 		case 3:
 			propConsensusRoundchangeInPacketsCounter.Inc(1)
