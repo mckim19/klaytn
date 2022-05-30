@@ -603,11 +603,7 @@ func (valSet *weightedCouncil) Copy() istanbul.ValidatorSet {
 }
 
 func (valSet *weightedCouncil) F() int {
-	if valSet.Size() > valSet.subSize {
-		return int(math.Ceil(float64(valSet.subSize)/3)) - 1
-	} else {
-		return int(math.Ceil(float64(valSet.Size())/3)) - 1
-	}
+	return int(math.Ceil(float64(valSet.Size())/3)) - 1 //It's the same as int(math.Floor(float64((valSet.Size()-1)/3)))
 }
 
 func (valSet *weightedCouncil) Policy() istanbul.ProposerPolicy { return valSet.policy }
