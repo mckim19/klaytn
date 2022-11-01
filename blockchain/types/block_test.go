@@ -58,6 +58,13 @@ func genMagmaHeader() *Header {
 	return header
 }
 
+func genKoreHeader() *Header {
+	header := genHeader()
+	header.Commit = common.Hash{0x00}
+	header.Reveal = big.NewInt(0)
+	return header
+}
+
 func genBlock() *Block {
 	return &Block{
 		header:       genHeader(),
@@ -68,6 +75,13 @@ func genBlock() *Block {
 func genMagmaBlock() *Block {
 	return &Block{
 		header:       genMagmaHeader(),
+		transactions: Transactions{},
+	}
+}
+
+func genKoreBlock() *Block {
+	return &Block{
+		header:       genKoreHeader(),
 		transactions: Transactions{},
 	}
 }
@@ -360,6 +374,8 @@ func TestMagmaBlockEncoding(t *testing.T) {
 		t.Errorf("encoded block mismatch:\ngot:  %x\nwant: %x", ourBlockEnc, blockEnc)
 	}
 }
+
+// TODO: add a test for block with random
 
 func TestEIP1559BlockEncoding(t *testing.T) {
 	b := genBlock()

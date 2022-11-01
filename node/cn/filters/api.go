@@ -238,6 +238,16 @@ func RPCMarshalHeader(head *types.Header, isEnabledEthTxTypeFork bool) map[strin
 		} else {
 			result["baseFeePerGas"] = (*hexutil.Big)(head.BaseFee)
 		}
+		if head.Reveal == nil {
+			result["commit"] = common.Hash{0x00}
+		} else {
+			result["commit"] = head.Commit
+		}
+		if head.Reveal == nil {
+			result["reveal"] = (*hexutil.Big)(new(big.Int).SetUint64(0))
+		} else {
+			result["reveal"] = (*hexutil.Big)(head.Reveal)
+		}
 	}
 
 	return result

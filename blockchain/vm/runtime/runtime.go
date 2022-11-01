@@ -49,6 +49,8 @@ type Config struct {
 	Debug       bool
 	EVMConfig   vm.Config
 	BaseFee     *big.Int
+	Commit      common.Hash
+	Reveal      *big.Int
 
 	State     *state.StateDB
 	GetHashFn func(n uint64) common.Hash
@@ -90,6 +92,12 @@ func setDefaults(cfg *Config) {
 	}
 	if cfg.BaseFee == nil {
 		cfg.BaseFee = new(big.Int).SetUint64(params.ZeroBaseFee)
+	}
+	if cfg.Commit.Big() == nil {
+		cfg.Commit = common.Hash{}
+	}
+	if cfg.Reveal == nil {
+		cfg.Reveal = new(big.Int)
 	}
 }
 

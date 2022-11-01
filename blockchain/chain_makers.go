@@ -242,6 +242,12 @@ func makeHeader(chain consensus.ChainReader, parent *types.Block, state *state.S
 	if chain.Config().IsMagmaForkEnabled(header.Number) {
 		header.BaseFee = misc.NextMagmaBlockBaseFee(parent.Header(), chain.Config().Governance.KIP71)
 	}
+	if chain.Config().IsKoreForkEnabled(header.Number) {
+		// TODO: impl calculation function for commit and reveal
+		header.Commit = common.Hash{0x00}
+		header.Reveal = new(big.Int).Set(common.Big0)
+	}
+
 	return header
 }
 

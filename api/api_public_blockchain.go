@@ -591,6 +591,16 @@ func RpcOutputBlock(b *types.Block, td *big.Int, inclTx bool, fullTx bool, isEna
 		} else {
 			fields["baseFeePerGas"] = (*hexutil.Big)(head.BaseFee)
 		}
+		if head.Commit.Big() == nil {
+			fields["commit"] = common.Hash{0x00}
+		} else {
+			fields["commit"] = head.Commit
+		}
+		if head.Reveal == nil {
+			fields["reveal"] = (*hexutil.Big)(new(big.Int).SetUint64(0))
+		} else {
+			fields["reveal"] = (*hexutil.Big)(head.Reveal)
+		}
 	}
 
 	return fields, nil

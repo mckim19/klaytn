@@ -47,6 +47,8 @@ func NewEVMContext(msg Message, header *types.Header, chain ChainContext, author
 		beneficiary       common.Address
 		baseFee           *big.Int
 		effectiveGasPrice *big.Int
+		commit            common.Hash
+		reveal            *big.Int
 	)
 
 	if author == nil {
@@ -64,6 +66,18 @@ func NewEVMContext(msg Message, header *types.Header, chain ChainContext, author
 		effectiveGasPrice = msg.GasPrice()
 	}
 
+	if header.Commit.Big() != nil {
+		commit = header.Commit
+	} else {
+		commit = common.BigToHash(big.NewInt(0))
+	}
+
+	if header.Reveal != nil {
+		reveal = header.Reveal
+	} else {
+		reveal = big.NewInt(0)
+	}
+
 	return vm.Context{
 		CanTransfer: CanTransfer,
 		Transfer:    Transfer,
@@ -75,6 +89,8 @@ func NewEVMContext(msg Message, header *types.Header, chain ChainContext, author
 		BlockScore:  new(big.Int).Set(header.BlockScore),
 		GasPrice:    new(big.Int).Set(effectiveGasPrice),
 		BaseFee:     baseFee,
+		Commit:      commit,
+		Reveal:      reveal,
 	}
 }
 

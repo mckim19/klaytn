@@ -96,6 +96,7 @@ func newWeightedValidator(addr common.Address, reward common.Address, votingpowe
 }
 
 type weightedCouncil struct {
+	chain             consensus.ChainReader
 	subSize           uint64
 	demotedValidators istanbul.Validators // validators staking KLAYs less than minimum, and not in committee/proposers
 	validators        istanbul.Validators // validators staking KLAYs more than and equals to minimum, and in committee/proposers
@@ -213,6 +214,9 @@ func NewWeightedCouncil(addrs []common.Address, demotedAddrs []common.Address, r
 	if valSet.Size() > 0 {
 		valSet.proposer.Store(valSet.GetByIndex(0))
 	}
+	// valSet.commit = common.BigToHash(big.NewInt(0))
+	// valSet.reveal = big.NewInt(0)
+	valSet.chain = chain
 	valSet.SetSubGroupSize(committeeSize)
 	valSet.selector = weightedRandomProposer
 
@@ -280,7 +284,13 @@ func weightedRandomProposer(valSet istanbul.ValidatorSet, lastProposer common.Ad
 	// At Refresh(), proposers is already randomly shuffled considering weights.
 	// So let's just round robin this array
 	blockNum := weightedCouncil.blockNum
-	picker := (blockNum + round - params.CalcProposerBlockNumber(blockNum+1)) % uint64(numProposers)
+	var picker uint64
+	if weightedCouncil.chain.Config().IsKoreForkEnabled(new(big.Int).SetUint64(blockNum)) {
+		reveal := weightedCouncil.chain.GetHeaderByNumber(blockNum).Reveal.Uint64()
+		picker = (blockNum + round - params.CalcProposerBlockNumber(blockNum+1) + reveal) % uint64(numProposers)
+	} else {
+		picker = (blockNum + round - params.CalcProposerBlockNumber(blockNum+1)) % uint64(numProposers)
+	}
 	proposer := weightedCouncil.proposers[picker]
 
 	// Enable below more detailed log when debugging
@@ -580,6 +590,7 @@ func (valSet *weightedCouncil) Copy() istanbul.ValidatorSet {
 	defer valSet.validatorMu.RUnlock()
 
 	newWeightedCouncil := weightedCouncil{
+		chain:             valSet.chain,
 		subSize:           valSet.subSize,
 		policy:            valSet.policy,
 		proposer:          valSet.proposer,
@@ -659,14 +670,15 @@ func (valSet *weightedCouncil) Refresh(hash common.Hash, blockNum uint64, config
 		weightedValidators, stakingAmounts, demotedValidators, _ = filterValidators(isSingle, governingNode, weightedValidators, stakingAmounts, minStaking)
 		valSet.setValidators(weightedValidators, demotedValidators)
 	}
-
 	if valSet.proposersBlockNum == blockNum {
 		// proposers are already refreshed
 		return nil
 	}
 
-	totalStaking, _ := calcTotalAmount(weightedValidators, newStakingInfo, stakingAmounts)
-	calcWeight(weightedValidators, stakingAmounts, totalStaking)
+	if !config.IsKoreForkEnabled(new(big.Int).SetUint64(blockNum)) {
+		totalStaking, _ := calcTotalAmount(weightedValidators, newStakingInfo, stakingAmounts)
+		calcWeight(weightedValidators, stakingAmounts, totalStaking)
+	}
 
 	valSet.refreshProposers(seed, blockNum)
 
@@ -847,10 +859,32 @@ func calcWeight(weightedValidators []*weightedValidator, stakingAmounts []float6
 func (valSet *weightedCouncil) refreshProposers(seed int64, blockNum uint64) {
 	var candidateValsIdx []int // This is a slice which stores index of validator. it is used for shuffling
 
+	//// len(valSet)*weight => len(candidateValsIdx)
+	//if !weightedRandom {
+	//	if len(valSet.proposers) == 0 { // pSet이 0개가 되었다는 뜻이므로,
+	//		valSet.proposers = valSet.validators // 다음 epoch를 충전한다.
+	//		return
+	//	}
+	//	return
+	//}
+
+	//if valSet.chain.Config().IsKoreForkEnabled(new(big.Int).SetUint64(blockNum)) {
+	//	proposers := make([]istanbul.Validator, len(valSet.validators))
+	//
+	//	valSet.proposers = proposers
+	//	valSet.proposersBlockNum = blockNum
+	//	return
+	//}
 	for index, val := range valSet.validators {
-		weight := val.Weight()
-		for i := uint64(0); i < weight; i++ {
-			candidateValsIdx = append(candidateValsIdx, index)
+		if valSet.chain.Config().IsKoreForkEnabled(new(big.Int).SetUint64(blockNum)) {
+			for i := uint64(0); i < 1; i++ {
+				candidateValsIdx = append(candidateValsIdx, index)
+			}
+		} else {
+			weight := val.Weight()
+			for i := uint64(0); i < weight; i++ {
+				candidateValsIdx = append(candidateValsIdx, index)
+			}
 		}
 	}
 

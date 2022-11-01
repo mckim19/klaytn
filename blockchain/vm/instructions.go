@@ -584,6 +584,11 @@ func opDifficulty(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stac
 	return nil, nil
 }
 
+func opRandom(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	stack.push(math.U256(evm.interpreter.intPool.get().Set(evm.Context.Reveal)))
+	return nil, nil
+}
+
 func opGasLimit(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	stack.push(math.U256(evm.interpreter.intPool.get().SetUint64(evm.GasLimit)))
 	return nil, nil
@@ -959,3 +964,37 @@ func makeSwap(size int64) executionFunc {
 		return nil, nil
 	}
 }
+
+// TODO:
+//func TestRandom(t *testing.T) {
+//	type testcase struct {
+//		name   string
+//		random common.Hash
+//	}
+//
+//	for _, tt := range []testcase{
+//		{name: "empty hash", random: common.Hash{}},
+//		{name: "1", random: common.Hash{0}},
+//		{name: "emptyCodeHash", random: emptyCodeHash},
+//		{name: "hash(0x010203)", random: crypto.Keccak256Hash([]byte{0x01, 0x02, 0x03})},
+//	} {
+//		var (
+//			env            = NewEVM(BlockContext{Random: &tt.random}, TxContext{}, nil, params.TestChainConfig, Config{})
+//			stack          = newstack()
+//			pc             = uint64(0)
+//			evmInterpreter = env.interpreter
+//		)
+//		opRandom(&pc, evmInterpreter, &ScopeContext{nil, stack, nil})
+//		if len(stack.data) != 1 {
+//			t.Errorf("Expected one item on stack after %v, got %d: ", tt.name, len(stack.data))
+//		}
+//		actual := stack.pop()
+//		expected, overflow := uint256.FromBig(new(big.Int).SetBytes(tt.random.Bytes()))
+//		if overflow {
+//			t.Errorf("Testcase %v: invalid overflow", tt.name)
+//		}
+//		if actual.Cmp(expected) != 0 {
+//			t.Errorf("Testcase %v: expected  %x, got %x", tt.name, expected, actual)
+//		}
+//	}
+//}

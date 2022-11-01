@@ -1366,6 +1366,10 @@ func BenchmarkOpBaseFee(b *testing.B) {
 	opBenchmark(b, opBaseFee)
 }
 
+//func BenchmarkOpRandom(b *testing.B) {
+//	opBenchmark(b, opRandom)
+//}
+
 func genStacksForDup(size int) []string {
 	stacks := make([]string, size)
 	return fillStacks(stacks, size)

@@ -59,6 +59,7 @@ type (
 	LondonCompatibleBlock    *big.Int
 	EthTxTypeCompatibleBlock *big.Int
 	magmaCompatibleBlock     *big.Int
+	koreCompatibleBlock      *big.Int
 )
 
 type (
@@ -133,6 +134,8 @@ func newBlockChain(n int, items ...interface{}) (*blockchain.BlockChain, *backen
 			genesis.Config.EthTxTypeCompatibleBlock = v
 		case magmaCompatibleBlock:
 			genesis.Config.MagmaCompatibleBlock = v
+		case koreCompatibleBlock:
+			genesis.Config.KoreCompatibleBlock = v
 		case proposerPolicy:
 			genesis.Config.Istanbul.ProposerPolicy = uint64(v)
 		case epoch:
@@ -216,6 +219,10 @@ func makeHeader(parent *types.Block, config *istanbul.Config) *types.Header {
 	if parent.Header().BaseFee != nil {
 		// We don't have chainConfig so the BaseFee of the current block is set by parent's for test
 		header.BaseFee = parent.Header().BaseFee
+	}
+	// TODO: Commit and Reveal
+	if parent.Header().Reveal != nil {
+		header.Reveal = parent.Header().Reveal
 	}
 	return header
 }
@@ -332,6 +339,7 @@ func TestVerifyHeader(t *testing.T) {
 	configItems = append(configItems, LondonCompatibleBlock(new(big.Int).SetUint64(0)))
 	configItems = append(configItems, EthTxTypeCompatibleBlock(new(big.Int).SetUint64(0)))
 	configItems = append(configItems, magmaCompatibleBlock(new(big.Int).SetUint64(0)))
+	configItems = append(configItems, koreCompatibleBlock(new(big.Int).SetUint64(0)))
 	chain, engine := newBlockChain(1, configItems...)
 	defer engine.Stop()
 

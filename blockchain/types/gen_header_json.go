@@ -31,6 +31,8 @@ func (h Header) MarshalJSON() ([]byte, error) {
 		Governance  hexutil.Bytes  `json:"governanceData"            gencodec:"required"`
 		Vote        hexutil.Bytes  `json:"voteData,omitempty"`
 		BaseFee     *hexutil.Big   `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+		Commit      common.Hash    `json:"commit"           rlp:"optional"`
+		Reveal      *hexutil.Big   `json:"reveal"           rlp:"optional"`
 		Hash        common.Hash    `json:"hash"`
 	}
 	var enc Header
@@ -49,6 +51,8 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	enc.Governance = h.Governance
 	enc.Vote = h.Vote
 	enc.BaseFee = (*hexutil.Big)(h.BaseFee)
+	enc.Commit = h.Commit
+	enc.Reveal = (*hexutil.Big)(h.Reveal)
 	enc.Hash = h.Hash()
 	return json.Marshal(&enc)
 }
@@ -71,6 +75,8 @@ func (h *Header) UnmarshalJSON(input []byte) error {
 		Governance  *hexutil.Bytes  `json:"governanceData"            gencodec:"required"`
 		Vote        *hexutil.Bytes  `json:"voteData,omitempty"`
 		BaseFee     *hexutil.Big    `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+		Commit      *common.Hash    `json:"Commit"           rlp:"optional"`
+		Reveal      *hexutil.Big    `json:"Reveal"           rlp:"optional"`
 	}
 	var dec Header
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -133,6 +139,12 @@ func (h *Header) UnmarshalJSON(input []byte) error {
 	}
 	if dec.BaseFee != nil {
 		h.BaseFee = (*big.Int)(dec.BaseFee)
+	}
+	if dec.Commit == nil {
+		return errors.New("missing required field 'commit' for Header")
+	}
+	if dec.Reveal == nil {
+		return errors.New("missing required field 'reveal' for Header")
 	}
 	return nil
 }

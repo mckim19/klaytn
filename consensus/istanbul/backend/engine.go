@@ -242,6 +242,8 @@ func (sb *backend) verifyHeader(chain consensus.ChainReader, header *types.Heade
 		return errInvalidBlockScore
 	}
 
+	// TODO: Check the Random
+
 	return sb.verifyCascadingFields(chain, header, parents)
 }
 
@@ -467,6 +469,16 @@ func (sb *backend) Finalize(chain consensus.ChainReader, header *types.Header, s
 	} else if header.BaseFee != nil {
 		logger.Error("A block before Magma hardfork shouldn't have baseFee", "blockNum", header.Number.Uint64())
 		return nil, consensus.ErrInvalidBaseFee
+	}
+
+	if chain.Config().IsKoreForkEnabled(header.Number) {
+		if header.Commit.Big() == nil || header.Reveal == nil {
+			logger.Error("Kore hard forked block should have commit or reveal", "blockNum", header.Number.Uint64())
+			return nil, errors.New("Invalid Kore block without commit or reveal")
+		}
+	} else if header.Commit.Big() != nil || header.Reveal != nil {
+		logger.Error("A block before Kore hardfork shouldn't have commit and reveal", "blockNum", header.Number.Uint64())
+		return nil, consensus.ErrInvalidCommitReveal
 	}
 
 	// If sb.chain is nil, it means backend is not initialized yet.

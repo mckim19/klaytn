@@ -69,12 +69,16 @@ type Header struct {
 	Governance []byte `json:"governanceData"            gencodec:"required"`
 	Vote       []byte `json:"voteData,omitempty"`
 
-	BaseFee *big.Int `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+	BaseFee *big.Int    `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+	Commit  common.Hash `json:"commit,omitempty"    rlp:"optional"`
+	Reveal  *big.Int    `json:"reveal,omitempty"    rlp:"optional"`
 }
 
 // field type overrides for gencodec
 type headerMarshaling struct {
 	BlockScore *hexutil.Big
+	Commit     common.Hash `json:"hash"`
+	Reveal     *hexutil.Big
 	Number     *hexutil.Big
 	GasUsed    hexutil.Uint64
 	Time       *hexutil.Big
