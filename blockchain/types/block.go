@@ -70,6 +70,7 @@ type Header struct {
 	Vote       []byte `json:"voteData,omitempty"`
 
 	BaseFee *big.Int `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+	Random  *big.Int `json:"random,omitempty" rlp:"optional"`
 }
 
 // field type overrides for gencodec

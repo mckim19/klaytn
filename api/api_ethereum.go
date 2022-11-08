@@ -1505,6 +1505,10 @@ func (api *EthereumAPI) rpcMarshalHeader(head *types.Header) (map[string]interfa
 			result["baseFeePerGas"] = (*hexutil.Big)(head.BaseFee)
 		}
 	}
+
+	if api.publicBlockChainAPI.b.ChainConfig().IsKoreForkEnabled(head.Number) {
+		result["random"] = (*hexutil.Big)(head.Random)
+	}
 	return result, nil
 }
 

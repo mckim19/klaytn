@@ -584,6 +584,11 @@ func opDifficulty(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stac
 	return nil, nil
 }
 
+func opRandom(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	stack.push(math.U256(evm.interpreter.intPool.get().Set(evm.Context.Random)))
+	return nil, nil
+}
+
 func opGasLimit(pc *uint64, evm *EVM, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	stack.push(math.U256(evm.interpreter.intPool.get().SetUint64(evm.GasLimit)))
 	return nil, nil

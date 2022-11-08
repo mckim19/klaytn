@@ -496,6 +496,7 @@ type Rules struct {
 	IsIstanbul bool
 	IsLondon   bool
 	IsMagma    bool
+	IsKore     bool
 }
 
 // Rules ensures c's ChainID is not nil.

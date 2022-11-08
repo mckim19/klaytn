@@ -64,6 +64,7 @@ var (
 	ConstantinopleInstructionSet = newConstantinopleInstructionSet()
 	IstanbulInstructionSet       = newIstanbulInstructionSet()
 	LondonInstructionSet         = newLondonInstructionSet()
+	KoreInstructionSet           = newKoreInstructionSet()
 )
 
 // JumpTable contains the EVM opcodes supported at a given fork.
@@ -74,6 +75,17 @@ type JumpTable [256]*operation
 func newLondonInstructionSet() JumpTable {
 	instructionSet := newIstanbulInstructionSet()
 	enable3198(&instructionSet) // Base fee opcode https://eips.ethereum.org/EIPS/eip-3198
+	return instructionSet
+}
+
+func newKoreInstructionSet() JumpTable {
+	instructionSet := newLondonInstructionSet()
+	instructionSet[PREVRANDAO] = &operation{
+		execute:     opRandom,
+		constantGas: GasQuickStep,
+		minStack:    minStack(0, 1),
+		maxStack:    maxStack(0, 1),
+	}
 	return instructionSet
 }
 

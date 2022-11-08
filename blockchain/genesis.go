@@ -331,6 +331,9 @@ func (g *Genesis) ToBlock(baseStateRoot common.Hash, db database.DBManager) *typ
 	if g.Config != nil && g.Config.IsMagmaForkEnabled(common.Big0) {
 		head.BaseFee = new(big.Int).SetUint64(params.DefaultLowerBoundBaseFee)
 	}
+	if g.Config != nil && g.Config.IsKoreForkEnabled(common.Big0) {
+		head.Random = new(big.Int).SetUint64(0)
+	}
 	stateDB.Commit(false)
 	stateDB.Database().TrieDB().Commit(root, true, g.Number)
 

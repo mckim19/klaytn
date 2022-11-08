@@ -58,6 +58,7 @@ type (
 	LondonCompatibleBlock    *big.Int
 	EthTxTypeCompatibleBlock *big.Int
 	magmaCompatibleBlock     *big.Int
+	koreCompatibleBlock      *big.Int
 )
 
 type (
@@ -216,6 +217,9 @@ func makeHeader(parent *types.Block, config *istanbul.Config) *types.Header {
 		// We don't have chainConfig so the BaseFee of the current block is set by parent's for test
 		header.BaseFee = parent.Header().BaseFee
 	}
+	if parent.Header().Random != nil {
+		header.Random = parent.Header().Random
+	}
 	return header
 }
 
@@ -331,6 +335,7 @@ func TestVerifyHeader(t *testing.T) {
 	configItems = append(configItems, LondonCompatibleBlock(new(big.Int).SetUint64(0)))
 	configItems = append(configItems, EthTxTypeCompatibleBlock(new(big.Int).SetUint64(0)))
 	configItems = append(configItems, magmaCompatibleBlock(new(big.Int).SetUint64(0)))
+	configItems = append(configItems, koreCompatibleBlock(new(big.Int).SetUint64(0)))
 	chain, engine := newBlockChain(1, configItems...)
 	defer engine.Stop()
 

@@ -450,6 +450,16 @@ func (sb *backend) Finalize(chain consensus.ChainReader, header *types.Header, s
 		return nil, consensus.ErrInvalidBaseFee
 	}
 
+	if chain.Config().IsKoreForkEnabled(header.Number) {
+		if header.Random == nil {
+			logger.Error("Kore hard forked block should have random", "blockNum", header.Number.Uint64())
+			return nil, errors.New("Invalid Kore block without random")
+		}
+	} else if header.Random != nil {
+		logger.Error("A block before Kore hardfork shouldn't have random", "blockNum", header.Number.Uint64())
+		return nil, consensus.ErrInvalidRandom
+	}
+
 	// If sb.chain is nil, it means backend is not initialized yet.
 	if sb.chain != nil && sb.governance.Params().Policy() == uint64(istanbul.WeightedRandom) {
 		// TODO-Klaytn Let's redesign below logic and remove dependency between block reward and istanbul consensus.

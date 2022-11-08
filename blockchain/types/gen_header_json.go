@@ -31,6 +31,7 @@ func (h Header) MarshalJSON() ([]byte, error) {
 		Governance  hexutil.Bytes  `json:"governanceData"            gencodec:"required"`
 		Vote        hexutil.Bytes  `json:"voteData,omitempty"`
 		BaseFee     *hexutil.Big   `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+		Random      *hexutil.Big   `json:"random,omitempty"           rlp:"optional"`
 		Hash        common.Hash    `json:"hash"`
 	}
 	var enc Header
@@ -49,6 +50,7 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	enc.Governance = h.Governance
 	enc.Vote = h.Vote
 	enc.BaseFee = (*hexutil.Big)(h.BaseFee)
+	enc.Random = (*hexutil.Big)(h.Random)
 	enc.Hash = h.Hash()
 	return json.Marshal(&enc)
 }
@@ -71,6 +73,7 @@ func (h *Header) UnmarshalJSON(input []byte) error {
 		Governance  *hexutil.Bytes  `json:"governanceData"            gencodec:"required"`
 		Vote        *hexutil.Bytes  `json:"voteData,omitempty"`
 		BaseFee     *hexutil.Big    `json:"baseFeePerGas,omitempty"    rlp:"optional"`
+		Random      *hexutil.Big    `json:"random,omitempty"           rlp:"optional"`
 	}
 	var dec Header
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -133,6 +136,9 @@ func (h *Header) UnmarshalJSON(input []byte) error {
 	}
 	if dec.BaseFee != nil {
 		h.BaseFee = (*big.Int)(dec.BaseFee)
+	}
+	if dec.Random != nil {
+		return errors.New("missing required field 'random' for Header")
 	}
 	return nil
 }
